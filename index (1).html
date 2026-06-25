@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🎬 AI Video to Shorts Tool</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --card: #13131f;
+  --card2: #1a1a2e;
+  --gold: #f5a623;
+  --red: #ff4757;
+  --green: #2ed573;
+  --blue: #3d8bff;
+  --purple: #a55eea;
+  --text: #e8e8f5;
+  --text2: #9090b0;
+  --border: #ffffff12;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif; min-height:100vh; }
+
+/* HEADER */
+.header {
+  background: linear-gradient(135deg, #1a0533, #0d1b4b);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.header-icon { font-size: 36px; }
+.header-title { font-size: 24px; font-weight: 800; background: linear-gradient(135deg, var(--gold), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* MAIN */
+.container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+/* STEP CARDS */
+.step-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.step-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.step-card.step1::before { background: linear-gradient(90deg, var(--blue), transparent); }
+.step-card.step2::before { background: linear-gradient(90deg, var(--gold), transparent); }
+.step-card.step3::before { background: linear-gradient(90deg, var(--green), transparent); }
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.step-num {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px;
+}
+.step-num.s1 { background: #3d8bff22; color: var(--blue); border: 2px solid var(--blue); }
+.step-num.s2 { background: #f5a62322; color: var(--gold); border: 2px solid var(--gold); }
+.step-num.s3 { background: #2ed57322; color: var(--green); border: 2px solid var(--green); }
+.step-title { font-size: 17px; font-weight: 700; }
+.step-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* FORM ELEMENTS */
+.input-group { margin-bottom: 16px; }
+.input-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+.input-field {
+  width: 100%;
+  background: #0d0d1a;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+}
+.input-field:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #3d8bff18; }
+.input-field::placeholder { color: #404060; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-blue { background: linear-gradient(135deg, #3d8bff, #2563eb); color: #fff; }
+.btn-blue:hover { transform: translateY(-1px); box-shadow: 0 4px 20px #3d8bff44; }
+.btn-gold { background: linear-gradient(135deg, var(--gold), #c77d10); color: #000; font-weight: 800; }
+.btn-gold:hover { transform: translateY(-1px); box-shadow: 0 4px 20px #f5a62344; }
+.btn-green { background: linear-gradient(135deg, var(--green), #22a35a); color: #000; font-weight: 800; }
+.btn-green:hover { transform: translateY(-1px); box-shadow: 0 4px 20px #2ed57344; }
+.btn-red { background: #ff475720; color: var(--red); border: 1px solid #ff475740; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* STATUS BADGE */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-connected { background: #2ed57320; color: var(--green); border: 1px solid #2ed57340; }
+.badge-disconnected { background: #ff475720; color: var(--red); border: 1px solid #ff475740; }
+
+/* CLIPS SELECTOR */
+.clips-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.clip-opt {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #0d0d1a;
+}
+.clip-opt:hover { border-color: var(--gold); }
+.clip-opt.selected { border-color: var(--gold); background: #f5a62312; }
+.clip-opt .num { font-size: 24px; font-weight: 800; color: var(--gold); }
+.clip-opt .lbl { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* VIDEO PREVIEW */
+#video-preview {
+  background: #0d0d1a;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  display: none;
+}
+.preview-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.preview-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text2); }
+.preview-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* PROGRESS */
+#progress-section { display: none; }
+.progress-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.progress-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.progress-sub { font-size: 14px; color: var(--text2); margin-bottom: 24px; }
+.progress-bar-wrap { background: #1a1a2e; border-radius: 99px; height: 12px; overflow: hidden; margin-bottom: 12px; }
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--blue), var(--purple), var(--gold));
+  transition: width 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+@keyframes shimmer { to { left: 100%; } }
+.progress-pct { font-size: 32px; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+.progress-msg { font-size: 14px; color: var(--text2); min-height: 20px; }
+
+/* STEPS INDICATOR */
+.steps-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+.step-ind {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  transition: all 0.3s;
+}
+.step-ind.active { background: #3d8bff20; color: var(--blue); border-color: var(--blue); }
+.step-ind.done { background: #2ed57320; color: var(--green); border-color: var(--green); }
+
+/* RESULTS */
+#results-section { display: none; }
+.result-card {
+  background: var(--card);
+  border: 1px solid #2ed57330;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.result-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent); }
+.result-num { font-size: 12px; color: var(--green); font-weight: 700; margin-bottom: 8px; }
+.result-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.result-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  background: #3d8bff12;
+  border-radius: 8px;
+  border: 1px solid #3d8bff30;
+}
+.result-link:hover { background: #3d8bff22; }
+
+/* ERROR */
+.error-box {
+  background: #ff475712;
+  border: 1px solid #ff475730;
+  border-radius: 12px;
+  padding: 16px;
+  color: var(--red);
+  font-size: 14px;
+  margin-top: 16px;
+  display: none;
+}
+
+/* TOAST */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 999;
+}
+#toast.show { opacity: 1; }
+#toast.success { background: #2ed57322; border: 1px solid #2ed57355; color: var(--green); }
+#toast.error { background: #ff475722; border: 1px solid #ff475755; color: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🎬</div>
+  <div>
+    <div class="header-title">AI Video to Shorts Tool</div>
+    <div class="header-sub">Long video link paste karo → AI automatically Shorts banake YouTube pe upload kare</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- STEP 1: YouTube Login -->
+  <div class="step-card step1">
+    <div class="step-header">
+      <div class="step-num s1">1</div>
+      <div>
+        <div class="step-title">YouTube Account Connect Karein</div>
+        <div class="step-sub">Shorts upload karne ke liye login zaruri hai</div>
+      </div>
+      <div style="margin-left:auto">
+        <span class="status-badge badge-disconnected" id="yt-status">● Not Connected</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-blue" onclick="connectYouTube()" id="connect-btn">
+        ▶ YouTube Se Connect Karein
+      </button>
+      <button class="btn btn-red" onclick="disconnectYouTube()" id="disconnect-btn" style="display:none">
+        ✕ Disconnect
+      </button>
+    </div>
+    <div id="yt-user" style="margin-top:12px;font-size:13px;color:var(--text2);display:none"></div>
+  </div>
+
+  <!-- STEP 2: Video URL -->
+  <div class="step-card step2">
+    <div class="step-header">
+      <div class="step-num s2">2</div>
+      <div>
+        <div class="step-title">Video Link Paste Karein</div>
+        <div class="step-sub">YouTube, Instagram, Facebook — koi bhi link</div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Video URL</label>
+      <div style="display:flex;gap:10px">
+        <input type="url" class="input-field" id="video-url"
+          placeholder="https://youtube.com/watch?v=... ya koi bhi video link"
+          oninput="urlChanged()"/>
+        <button class="btn btn-gold" onclick="fetchVideoInfo()" id="fetch-btn" disabled>
+          🔍 Preview
+        </button>
+      </div>
+    </div>
+
+    <div id="video-preview">
+      <div class="preview-title" id="preview-title"></div>
+      <div class="preview-meta">
+        <span>⏱️ <span id="preview-duration"></span></span>
+        <span>📺 <span id="preview-channel"></span></span>
+      </div>
+    </div>
+
+    <div class="error-box" id="url-error"></div>
+  </div>
+
+  <!-- STEP 3: Shorts Settings -->
+  <div class="step-card step3">
+    <div class="step-header">
+      <div class="step-num s3">3</div>
+      <div>
+        <div class="step-title">Shorts Settings</div>
+        <div class="step-sub">Kitni shorts banani hain?</div>
+      </div>
+    </div>
+
+    <label class="input-label">Clips Ki Sankhya</label>
+    <div class="clips-row">
+      <div class="clip-opt selected" onclick="selectClips(1, this)">
+        <div class="num">1</div>
+        <div class="lbl">Ek Short</div>
+      </div>
+      <div class="clip-opt" onclick="selectClips(2, this)">
+        <div class="num">2</div>
+        <div class="lbl">Do Shorts</div>
+      </div>
+      <div class="clip-opt" onclick="selectClips(3, this)">
+        <div class="num">3</div>
+        <div class="lbl">Teen Shorts</div>
+      </div>
+      <div class="clip-opt" onclick="selectClips(4, this)">
+        <div class="num">4</div>
+        <div class="lbl">Chaar Shorts</div>
+      </div>
+      <div class="clip-opt" onclick="selectClips(5, this)">
+        <div class="num">5</div>
+        <div class="lbl">Paanch Shorts</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <div style="background:#f5a62312;border:1px solid #f5a62330;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--gold)">
+        ⚡ AI kya karega: Video download → Best moments nikalna → Vertical format (9:16) mein cut karna → Title/Description/Hashtags generate karna → YouTube pe upload karna
+      </div>
+      <button class="btn btn-green" onclick="startProcess()" id="start-btn" style="width:100%;justify-content:center;padding:16px;font-size:16px" disabled>
+        🚀 Shuru Karein — Automatic Process
+      </button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="progress-section">
+    <div class="progress-card">
+      <div class="progress-title">🤖 AI Kaam Kar Raha Hai...</div>
+      <div class="progress-sub" id="video-being-processed"></div>
+
+      <div class="steps-indicator">
+        <div class="step-ind" id="ind-download">📥 Download</div>
+        <div class="step-ind" id="ind-analyze">🔍 Analyze</div>
+        <div class="step-ind" id="ind-cut">✂️ Cut</div>
+        <div class="step-ind" id="ind-ai">🤖 AI Metadata</div>
+        <div class="step-ind" id="ind-upload">📤 Upload</div>
+      </div>
+
+      <div class="progress-pct" id="progress-pct">0%</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+      </div>
+      <div class="progress-msg" id="progress-msg">Shuru ho raha hai...</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-section">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:48px;margin-bottom:12px">🎉</div>
+      <div style="font-size:22px;font-weight:800;color:var(--green)">Sab Upload Ho Gaya!</div>
+      <div style="font-size:14px;color:var(--text2);margin-top:6px">Aapki shorts YouTube pe live hain</div>
+    </div>
+    <div id="results-list"></div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn btn-gold" onclick="resetTool()" style="padding:12px 32px">
+        🔄 Naya Video Process Karein
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────
+// Yahan apna Railway/Render URL daalo jab deploy ho jaaye
+const API_BASE = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000'
+  : 'https://YOUR-RAILWAY-URL.railway.app'; // ← Deploy ke baad yahan URL daalo
+
+// ── STATE ─────────────────────────────────────────────────────
+let ytCredentials = null;
+let selectedClips = 1;
+let currentJobId = null;
+let statusInterval = null;
+let videoInfoLoaded = false;
+
+// LocalStorage se credentials load karo
+const savedCreds = localStorage.getItem('yt_credentials');
+if (savedCreds) {
+  ytCredentials = JSON.parse(savedCreds);
+  updateYTStatus(true);
+}
+
+// ── YOUTUBE AUTH ──────────────────────────────────────────────
+function connectYouTube() {
+  showToast('YouTube login window khul rahi hai...', 'success');
+  fetch(`${API_BASE}/auth/login`)
+    .then(r => r.json())
+    .then(data => {
+      const popup = window.open(data.auth_url, 'YouTube Login', 'width=600,height=700');
+      window.addEventListener('message', function handler(e) {
+        if (e.data && e.data.credentials) {
+          ytCredentials = e.data.credentials;
+          localStorage.setItem('yt_credentials', JSON.stringify(ytCredentials));
+          updateYTStatus(true);
+          popup && popup.close();
+          window.removeEventListener('message', handler);
+          showToast('✅ YouTube connect ho gaya!', 'success');
+          checkStartBtn();
+        }
+      });
+    })
+    .catch(() => showToast('Server se connect nahi ho pa raha', 'error'));
+}
+
+function disconnectYouTube() {
+  ytCredentials = null;
+  localStorage.removeItem('yt_credentials');
+  updateYTStatus(false);
+  checkStartBtn();
+  showToast('YouTube disconnect ho gaya', 'error');
+}
+
+function updateYTStatus(connected) {
+  const badge = document.getElementById('yt-status');
+  const connectBtn = document.getElementById('connect-btn');
+  const disconnectBtn = document.getElementById('disconnect-btn');
+  if (connected) {
+    badge.className = 'status-badge badge-connected';
+    badge.textContent = '● Connected';
+    connectBtn.style.display = 'none';
+    disconnectBtn.style.display = 'inline-flex';
+  } else {
+    badge.className = 'status-badge badge-disconnected';
+    badge.textContent = '● Not Connected';
+    connectBtn.style.display = 'inline-flex';
+    disconnectBtn.style.display = 'none';
+  }
+}
+
+// ── VIDEO URL ─────────────────────────────────────────────────
+function urlChanged() {
+  const url = document.getElementById('video-url').value.trim();
+  document.getElementById('fetch-btn').disabled = !url;
+  document.getElementById('video-preview').style.display = 'none';
+  document.getElementById('url-error').style.display = 'none';
+  videoInfoLoaded = false;
+  checkStartBtn();
+}
+
+function fetchVideoInfo() {
+  const url = document.getElementById('video-url').value.trim();
+  const btn = document.getElementById('fetch-btn');
+  btn.disabled = true;
+  btn.textContent = '🔄 Loading...';
+  document.getElementById('url-error').style.display = 'none';
+
+  fetch(`${API_BASE}/video-info`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url })
+  })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = '🔍 Preview';
+      if (!data.success) {
+        const err = document.getElementById('url-error');
+        err.style.display = 'block';
+        err.textContent = '❌ ' + (data.error || 'Video load nahi hui');
+        return;
+      }
+      document.getElementById('preview-title').textContent = data.title;
+      document.getElementById('preview-duration').textContent = formatDuration(data.duration);
+      document.getElementById('preview-channel').textContent = data.uploader;
+      document.getElementById('video-preview').style.display = 'block';
+      videoInfoLoaded = true;
+      checkStartBtn();
+      showToast('✅ Video mil gayi!', 'success');
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = '🔍 Preview';
+      showToast('Server se connect nahi ho pa raha', 'error');
+    });
+}
+
+function formatDuration(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = Math.floor(sec % 60);
+  if (h > 0) return `${h}:${pad(m)}:${pad(s)}`;
+  return `${m}:${pad(s)}`;
+}
+function pad(n) { return String(n).padStart(2, '0'); }
+
+// ── CLIPS SELECTOR ────────────────────────────────────────────
+function selectClips(num, el) {
+  document.querySelectorAll('.clip-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedClips = num;
+}
+
+// ── START PROCESS ─────────────────────────────────────────────
+function checkStartBtn() {
+  const url = document.getElementById('video-url').value.trim();
+  document.getElementById('start-btn').disabled = !(ytCredentials && url && videoInfoLoaded);
+}
+
+function startProcess() {
+  const url = document.getElementById('video-url').value.trim();
+  if (!ytCredentials) { showToast('Pehle YouTube connect karein', 'error'); return; }
+  if (!url) { showToast('Video URL daalo', 'error'); return; }
+
+  // UI update
+  document.querySelector('.step-card.step1').style.opacity = '0.5';
+  document.querySelector('.step-card.step2').style.opacity = '0.5';
+  document.querySelector('.step-card.step3').style.opacity = '0.5';
+  document.getElementById('progress-section').style.display = 'block';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('video-being-processed').textContent =
+    document.getElementById('preview-title').textContent;
+
+  resetIndicators();
+
+  fetch(`${API_BASE}/process`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      url,
+      credentials: ytCredentials,
+      num_clips: selectedClips
+    })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) { showToast('Error: ' + data.error, 'error'); return; }
+      currentJobId = data.job_id;
+      statusInterval = setInterval(checkStatus, 2000);
+    })
+    .catch(() => showToast('Server error', 'error'));
+}
+
+function checkStatus() {
+  if (!currentJobId) return;
+  fetch(`${API_BASE}/status/${currentJobId}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
+      updateProgress(data);
+      if (data.status === 'completed') {
+        clearInterval(statusInterval);
+        showResults(data.uploaded_videos);
+      } else if (data.status === 'error') {
+        clearInterval(statusInterval);
+        showToast('Error: ' + data.message, 'error');
+        resetUI();
+      }
+    });
+}
+
+function updateProgress(data) {
+  const pct = data.progress || 0;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-msg').textContent = data.message || '';
+
+  // Indicators update
+  const status = data.status;
+  const msg = (data.message || '').toLowerCase();
+
+  if (status === 'downloading' || msg.includes('download')) setInd('download', 'active');
+  if (pct >= 42) { setInd('download', 'done'); setInd('analyze', 'active'); }
+  if (msg.includes('clip') && msg.includes('ban')) { setInd('analyze', 'done'); setInd('cut', 'active'); }
+  if (msg.includes('ai') || msg.includes('title')) { setInd('cut', 'done'); setInd('ai', 'active'); }
+  if (msg.includes('upload')) { setInd('ai', 'done'); setInd('upload', 'active'); }
+  if (status === 'completed') {
+    ['download','analyze','cut','ai','upload'].forEach(k => setInd(k, 'done'));
+  }
+}
+
+function setInd(key, state) {
+  const el = document.getElementById('ind-' + key);
+  if (!el) return;
+  el.className = 'step-ind ' + state;
+}
+
+function resetIndicators() {
+  ['download','analyze','cut','ai','upload'].forEach(k => setInd(k, ''));
+}
+
+function showResults(videos) {
+  document.getElementById('progress-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'block';
+  const list = document.getElementById('results-list');
+  list.innerHTML = '';
+  videos.forEach((v, i) => {
+    list.innerHTML += `
+      <div class="result-card">
+        <div class="result-num">✅ SHORT ${i + 1} UPLOAD HO GAYI</div>
+        <div class="result-title">${v.title}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px">${v.hashtags}</div>
+        <a href="${v.youtube_url}" target="_blank" class="result-link">
+          ▶ YouTube pe Dekho
+        </a>
+      </div>`;
+  });
+  showToast('🎉 Sab shorts upload ho gayi!', 'success');
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function resetTool() {
+  document.getElementById('video-url').value = '';
+  document.getElementById('video-preview').style.display = 'none';
+  document.getElementById('progress-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.querySelector('.step-card.step1').style.opacity = '1';
+  document.querySelector('.step-card.step2').style.opacity = '1';
+  document.querySelector('.step-card.step3').style.opacity = '1';
+  document.getElementById('start-btn').disabled = true;
+  document.getElementById('fetch-btn').disabled = true;
+  videoInfoLoaded = false;
+  currentJobId = null;
+}
+
+function resetUI() {
+  document.querySelector('.step-card.step1').style.opacity = '1';
+  document.querySelector('.step-card.step2').style.opacity = '1';
+  document.querySelector('.step-card.step3').style.opacity = '1';
+  document.getElementById('progress-section').style.display = 'none';
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(() => { t.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>
