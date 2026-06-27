@@ -35,16 +35,20 @@ jobs = {}
 
 # ── COOKIES SETUP ─────────────────────────────────────────────
 def get_cookies_file():
-    """Environment se cookies file banao"""
-    if YT_COOKIES:
-        tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False)
-        tmp.write(YT_COOKIES)
-        tmp.close()
-        return tmp.name
-    # Agar file already hai
-    if os.path.exists('/tmp/cookies.txt'):
-        return '/tmp/cookies.txt'
-    return None
+def get_cookies_file():
+    if not YT_COOKIES:
+        return None
+
+    content = YT_COOKIES.replace("\\n", "\n").strip()
+
+    if not content.startswith("# Netscape HTTP Cookie File"):
+        content = "# Netscape HTTP Cookie File\n\n" + content
+
+    path = "/tmp/cookies.txt"
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
+
+    return path
 
 def get_ydl_opts(extra=None):
     """Bot detection bypass options"""
